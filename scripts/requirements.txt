@@ -1,0 +1,23 @@
+# ClassIn API Docs Skill - 依赖包
+# 安装命令：pip install -r scripts/requirements.txt
+
+# 向量数据库（本地持久化）
+chromadb>=0.4.24
+
+# 中文语义嵌入模型（无需 API Key，本地运行）
+sentence-transformers>=2.6.1
+
+# 配置文件解析
+pyyaml>=6.0
+
+# HTTP 请求（代码示例用）
+requests>=2.31.0
+
+# ─── 以下为可选依赖，按需安装 ───────────────────────────────────────────
+# LLM 模式支持（根据 provider 选择安装）
+
+# OpenAI 兼容接口（支持 OpenAI / Claude API / 通义 / Ollama）
+# openai>=1.12.0
+
+# Claude (Anthropic)
+# anthropic>=0.20.0
