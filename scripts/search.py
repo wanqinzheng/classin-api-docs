@@ -67,7 +67,8 @@ def vector_search(query: str, top_k: int = 10, threshold: float = 0.0):
     """
     try:
         import chromadb
-        from chromadb.utils import embedding_functions
+        from chromadb.api.types import EmbeddingFunction
+        from fastembed import TextEmbedding
     except ImportError:
         print("[ERROR] 缺少依赖，运行：pip install -r scripts/requirements.txt", file=sys.stderr)
         raise SystemExit(1)
@@ -76,10 +77,15 @@ def vector_search(query: str, top_k: int = 10, threshold: float = 0.0):
         print("[ERROR] 向量索引不存在，请先运行：python scripts/build_index.py", file=sys.stderr)
         raise SystemExit(1)
 
+    # fastembed 原生 ONNX 嵌入函数（零 PyTorch 依赖，~41MB）
+    class FastembedBgeSmallZh(EmbeddingFunction):
+        def __init__(self, model_name=EMBED_MODEL):
+            self._model = TextEmbedding(model_name=model_name)
+        def __call__(self, input):
+            return [emb.tolist() for emb in self._model.embed(input)]
+
     client = chromadb.PersistentClient(path=str(DB_DIR))
-    embed_fn = embedding_functions.SentenceTransformerEmbeddingFunction(
-        model_name=EMBED_MODEL, device="cpu"
-    )
+    embed_fn = FastembedBgeSmallZh()
 
     try:
         collection = client.get_collection(name=COLLECTION_NAME, embedding_function=embed_fn)

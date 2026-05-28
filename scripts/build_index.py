@@ -212,19 +212,24 @@ def main():
     # 导入依赖
     try:
         import chromadb
-        from chromadb.utils import embedding_functions
+        from chromadb.api.types import EmbeddingFunction
+        from fastembed import TextEmbedding
     except ImportError:
         print("[ERROR] 缺少依赖，请先运行：pip install -r scripts/requirements.txt")
-        print("[ERROR] 如果尚未安装 PyYAML，请同时运行：pip install pyyaml")
         raise SystemExit(1)
+
+    # fastembed 原生 ONNX 嵌入函数（零 PyTorch 依赖，~41MB）
+    class FastembedBgeSmallZh(EmbeddingFunction):
+        def __init__(self, model_name=EMBED_MODEL):
+            self._model = TextEmbedding(model_name=model_name)
+        def __call__(self, input):
+            return [emb.tolist() for emb in self._model.embed(input)]
 
     DB_DIR.mkdir(parents=True, exist_ok=True)
 
     # 初始化 ChromaDB
     client = chromadb.PersistentClient(path=str(DB_DIR))
-    embed_fn = embedding_functions.SentenceTransformerEmbeddingFunction(
-        model_name=args.model, device="cpu"
-    )
+    embed_fn = FastembedBgeSmallZh(model_name=args.model)
 
     # 获取或创建 collection
     if args.rebuild:

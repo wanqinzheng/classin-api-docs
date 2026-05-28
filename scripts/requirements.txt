@@ -5,7 +5,8 @@
 chromadb>=0.4.24
 
 # 中文语义嵌入模型（无需 API Key，本地运行）
-sentence-transformers>=2.6.1
+# fastembed 原生 ONNX 推理，零 PyTorch 依赖，~41MB（vs sentence-transformers+torch ~1139MB）
+fastembed>=0.8.0
 
 # 配置文件解析
 pyyaml>=6.0
