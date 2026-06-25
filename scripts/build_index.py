@@ -221,7 +221,15 @@ def main():
     # fastembed 原生 ONNX 嵌入函数（零 PyTorch 依赖，~41MB）
     class FastembedBgeSmallZh(EmbeddingFunction):
         def __init__(self, model_name=EMBED_MODEL):
-            self._model = TextEmbedding(model_name=model_name)
+            custom_cache_dir = os.path.join(os.getcwd(), ".fastembed_cache")
+            self._model = TextEmbedding(model_name=model_name, cache_dir=custom_cache_dir)
+            self._model_name = model_name
+
+        def name(self):
+            # 必须实现 name() 避免 ChromaDB 显示 NotImplemented
+            short_name = self._model_name.split("/")[-1]
+            return f"fastembed:{short_name}"
+
         def __call__(self, input):
             return [emb.tolist() for emb in self._model.embed(input)]
 
@@ -242,11 +250,22 @@ def main():
     else:
         meta = load_meta()
 
-    collection = client.get_or_create_collection(
-        name=COLLECTION_NAME,
-        embedding_function=embed_fn,
-        metadata={"hnsw:space": "cosine"},
-    )
+    # 智能获取或创建 collection，处理 embedding function 冲突
+    try:
+        collection = client.get_or_create_collection(
+            name=COLLECTION_NAME,
+            embedding_function=embed_fn,
+            metadata={"hnsw:space": "cosine"},
+        )
+    except ValueError:
+        print("[WARN] 检测到 embedding 函数变更（旧 → 新: fastembed），将强制重建索引...")
+        client.delete_collection(COLLECTION_NAME)
+        collection = client.create_collection(
+            name=COLLECTION_NAME,
+            embedding_function=embed_fn,
+            metadata={"hnsw:space": "cosine"},
+        )
+        meta = {}  # 重置增量元数据，全量重建
 
     # 打印统计
     print_stats(md_files)

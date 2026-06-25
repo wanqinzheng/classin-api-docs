@@ -1026,7 +1026,8 @@
 ```
 
 ## 课节聊天消息打包推送
-用户在教室内聊天(包括文字,图片)数据,在课节结束后会进行打包,然后将相应下载地址推送给客户。<br>
+
+课堂的出勤信息，在课堂结束后推送。包括出勤及未出勤的所有课堂，以及课堂内所有成员。
 
 | 参数名 | 类型 | 说明 |
 | --- | --- | --- |
@@ -1044,5 +1045,94 @@
   "ClassID": 163937,
   "SID": 100038,
   "Url": "pgdfile.eeo.cn/classchat/202204/8/71c4d8d054cc44b19d9a6c350047359d.zip"
+}
+```
+
+
+## 课堂出勤信息
+
+在课堂结束后，推送课堂的出勤情况，同时会包括缺勤及出勤的数据。
+
+| 参数名                      | 类型        | 说明                                       |
+|---------------------------|-----------|------------------------------------------|
+| Cmd                       | String    | Attendance
+| CourseID                  | Int32     | 课程 ID                                  |
+| SID                       | Int32     | 机构 ID                                  |
+| ClassID                   | Int32     | 课节 ID                                  |
+| AttendanceStudentNum      | Int32     | 实际出勤学生人数                          |
+| ClassStudentNum           | Int32     | 课堂应到学生总数                          |
+| ClassName                 | String    | 课堂名称                                  |
+| CourseName                | String    | 课程名称                                  |
+| ActivityID                | Int32     | 活动 ID                                   |
+| ClassStartTime            | Int32     | 课堂开始时间戳（秒级，对应 Unix 时间）      |
+| ClassEndTime              | Int32     | 课堂结束时间戳（秒级，对应 Unix 时间）      |
+| AttendanceFlag            | Int32     | 出勤标识（1 表示课堂有出勤事件，0 表示课堂无出勤）         |
+| Data                      | 对象数组   | 每个成员的出勤详情，数组内子字段见下表     |
+|   └ Uid                  | Int32     | 成员UID                          |
+|   └ AttendanceTime       | Int32     | 出勤时长（单位：秒）                     |
+|   └ LastOutTime          | Int32     | 最后离开课堂的时间戳（秒级）              |
+|   └ FirstInTime          | Int32     | 首次进入课堂的时间戳（秒级）              |
+|   └ Identity             | Int32     | 身份类型   |
+|   └ Name                 | String    | 成员姓名（可能包含特殊字符） ，取后台姓名             |
+|   └ FirstInDevice        | Int32     | 首次进入课堂的设备 ID，定义参考进入教室的Device字段 |
+|   └ LastOutReason        | Int32     | 最后离开课堂的原因，定义参考退出教室的Reason字段  | 
+
+
+
+### 实例
+```
+{
+    "ClassID": 234933,
+    "AttendanceStudentNum": 0,
+    "ActionTime": 1773043500,
+    "TimeStamp": 1773044100,
+    "CourseID": 80289,
+    "ClassStartTime": 1773043037,
+    "SafeKey": "11f4878ef3ed3110bf94ddfa462b9824",
+    "Cmd": "Attendance",
+    "ClassStudentNum": 4,
+    "ClassName": "测试日志-出勤消息-主课程-35",
+    "CourseName": "测试日志-改一下",
+    "ActivityID": 112410,
+    "SID": 100002,
+    "ClassEndTime": 1773043499,
+    "AttendanceFlag": 1,
+    "_id": "69ae7f2c99abb072095c3a58",
+    "Data": [
+        {
+            "Uid": 10225590,
+            "AttendanceTime": 0,
+            "LastOutTime": 0,
+            "FirstInTime": 0,
+            "Identity": 1,
+            "Name": "ss"
+        },
+        {
+            "Uid": 30745894,
+            "AttendanceTime": 0,
+            "LastOutTime": 0,
+            "FirstInTime": 0,
+            "Identity": 1,
+            "Name": "<br>测声音专用</br>2"
+        },
+        {
+            "Uid": 6500806,
+            "AttendanceTime": 0,
+            "LastOutTime": 0,
+            "FirstInTime": 0,
+            "Identity": 1,
+            "Name": "five5 five5"
+        },
+        {
+            "Uid": 1000082,
+            "AttendanceTime": 128,
+            "LastOutTime": 1773043499,
+            "FirstInDevice": 0,
+            "FirstInTime": 1773042925,
+            "LastOutReason": 2,
+            "Identity": 3,
+            "Name": "super star"
+        }
+    ]
 }
 ```
