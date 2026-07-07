@@ -5,8 +5,9 @@
 **注意** 
 1. 关于客户端回放观看的名单设置有以下几个通用逻辑： 
    - 仅支持课堂活动，仅在课堂结束后可设置（包括接口和后台）。
-   - 人员默认值=课节授课教师+课节联席教师+课节学生（含插班生）+ 班级下其他老师 + 班级班主任
+   - 人员默认值=课节授课教师+课节联席教师+课节学生（含插班生）+ 班级下其他老师 + 班级班主任 - 调出生
    - 人员可选范围=课节授课教师+课节联席教师+班级下学生+班级下其他老师+班主任  
+   - 目前为了兼容，接口支持传活动id和classId二选一，但是强烈建议传活动id。
 1. 关于本接口--设置客户端回放为全员不可看
    - 可以批量设置多个课堂，每个课堂有单独的返回码，返回码在data里。
    - 如果将某些可选人员添加为可观看人员，可使用(添加客户端回放可观看人员)[./addPlaybackUser.md]接口
@@ -40,7 +41,8 @@
 | key | 必填 | 类型 |说明 | 规则说明 |
 | ----| ----|----| ----- | -----|
 | courseId | 是 | integer | 班级（课程）ID |  |
-| classIds | 是 | array[integer] | 课节ID数组 |  |
+| activityIds | 否 | array[integer] | 课堂活动ID数组 | 和课节id二选一，如果有活动id优先使用活动id |
+| classIds | 否 | array[integer] | 课节ID数组 | 和活动id二选一，如果有活动id优先使用活动id |
 
 
 ## 响应参数
@@ -50,9 +52,10 @@
 | code | integer | 1 | 错误码 |
 | msg | string | "程序正常执行" | 错误信息 |
 | data | object | null | 返回信息 |
-| └ successList | array[int] |  | 设置成功的课节id |
-| └ failedList | array[object] | 1 | 设置失败的课节id和错误信息 |
-|     └ uid | int |  | 课节id |
+| └ successList | array[int] |  | 设置成功的活动id/课节id |
+| └ failedList | array[object] | 1 | 设置失败的活动id/课节id和错误信息 |
+|     └ activityId | int |  | 传入的活动id |
+|     └ classId | int |  | 传入的课节id | 
 |     └ code | int |  | 错误码 |
 |     └ msg | string |  | 错误信息 |
 
@@ -71,7 +74,7 @@ Content-Length: 117
 
 {
     "courseId": 414193,
-    "classIds": [25096097,25096099]
+    "activityId": [25096097,25096099]
 }
 ```
 
@@ -84,7 +87,7 @@ curl -X POST \
      -H 'X-EEO-UID: 409864' \
      -H 'X-EEO-TS: 1722938382' \
      -H 'Content-Type: application/json' \
-     -d '{"courseId": 414193, "classIds": [25096097,25096099]}' \
+     -d '{"courseId": 414193, "activityId": [25096097,25096099]}' \
      'https://root_url/playback/setPlaybackAllForbidden'
 ```
 
@@ -117,6 +120,7 @@ curl -X POST \
 | 121601021 | 课程不属于当前机构下 |
 | 121601022 | 课程不是标准课 |
 | 121601023 | 课程已过期 | 
+| 121603001 | 课堂信息不存在|
 | 121609004 | 课节不存在或不属于该机构 | 
 | 121609005 | 课节未结束 |  
 | 121609006 | 课节未开启录课 |  
