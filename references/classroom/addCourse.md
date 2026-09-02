@@ -10,6 +10,9 @@
 1. 可以对课程设置班主任。课程的班主任能够在（PC&Android&iOS）客户端进行管理班级（例如：创建/编辑/删除课节及学生、以及结束课程等）。请注意：班主任在客户端的操作行为，其数据不会返回至您的对接系统里（例如，班主任通过客户端创建的课节，该课节信息不回同步至您的系统里）。
 2. 当传参mainTeacherUid为空时（即""），等效于不传，表示不设置课程班主任。
 
+**参数兼容说明**    
+2026年9月，新增allowDeleteCourseStudentReplay 取代原先的 notAllowDeleteCourseStudentReplay。具体说明看参数部分。请使用新参数对接。     
+为兼容之前对接的程序，旧参数仍有效，但如果同时传两个，会仅取 allowDeleteCourseStudentReplay 的值。
 
 ## URL 
 
@@ -33,7 +36,7 @@
 | timeStamp	| 是 | 无 | 当前调用接口20分钟以内的 Unix Epoch 时间戳 | Unix Epoch 时间戳是 1970年1月1日 00:00:00 (世界标准时间) 起经过的秒数|
 | courseName |	是 |	1-90位字符，不区分中英文，超过会自动截取为90字 |	课程名称 |	无|
 | folderId |	否	| 不传则默认空目录 |	可用资源文件夹 ID |	无|
-| Filedata |	否 |	二进制流 | 上传的课程封面图片 |	当此字段为空时，且设置了学校的默认课程封面，则会使用默认封面作为课程的封面<br>设置学校的默认课程封面的方法：登录到  eeo.cn 后台，点击左侧导航：学校设置 -- 基本设置 |
+| Filedata |	否 |	二进制流 | 上传的课程封面头像 |	当此字段为空时，且设置了学校的默认课程头像，则会使用默认图片作为课程的头像<br>设置学校的默认课程头像的方法：登录到  eeo.cn 后台，点击左侧导航：学校设置 -- 基本设置 |
 | expiryTime |	否 |	过期时间不传、传0、传空均当成0，课程过期时间设置为永不过期；如果设置有效期，则有效期只能传当前时间5年之内的时间戳 |	过期时间 |	如果后继创建课节，有效期会按课节时间顺延3个月;<br>Unix Epoch 时间戳（秒单位）|
 | mainTeacherUid | 否 | 班主任uid，不传以及传空都不设置班主任 | 班主任 UID | 注册用户接口返回的用户 UID  |
 | subjectId | 否 | 不传或不符合规则的值默认为0，该字段仅支持中小学课程 | 课程学科分类 | 0:空; 1:语文; 2:数学; 3:英语; 4:物理; 5:化学; 6:生物; 7:政治; 8:历史; 9:地理; 10:思想品德; 11:音乐; 12:体育; 13:美术; 14:通用技术; 15:信息技术; 16:科学; 99:其他学科 | 
@@ -43,14 +46,27 @@
 | courseUniqueIdentity | 否 | 例如： 45s8d5a6asaa1ssf（1-32 位字符，不符合规则的值接口会返回 100 错误） | 唯一标识  | 机构可传唯一标识，传入此值后，我们会检验已创建课程中是否有该唯一标识|
 | allowAddFriend | 否 | tinyint，最大长度1 | 无 | 是否允许班级成员在群里互相添加好友，0=不允许，1=允许<br>传非0或非1报参数错误<br>不传则使用设置项 **允许班级成员互相添加好友默认开启状态设置** （设置项入口：登录eeocn学校后台 -- **学校设置** -- **班级设置**）的值 |
 | allowStudentModifyNickname | 否 | tinyint，最大长度1 | 无 | 是否允许学生在群里修改其班级昵称，0=不允许，1=允许，传非0或非1报参数错误，不传默认0 |
-| notAllowDeleteCourseStudentReplay | 否 | int  | 不传不修改，传错报【参数错误】 | 是否不允许离开班级的学生或班级解散后，可查看课程内容	0=否（允许），1=是（不允许） |
+| allowDeleteCourseStudentReplay | 否 | int  | 不传使用机构默认值，传错报【参数错误】 | 是否允许离开班级的学生或班级解散后，可查看课程内容	0=否（不允许），1=是（允许） |
+| allowInitiativeJoin | 否 | int | 不传默认0 | 允许学生主动加入班级，0=不允许，1=允许 |
+| inviteState | 否 | int | 不传默认0 | 分享后网页是否显示加入班级入口。仅当allowInitiativeJoin=1时有效 |
+| allowTeacherAddFriend | 否 | int | 不传则使用机构配置 | 允许班主任添加班级成员为好友，0=不允许，1=允许 |
+| allowCourseNotice | 否 | int | 不传则使用机构配置 | 允许显示班级动态，0=不允许，1=允许 |
+| allowTeacherCreateCourse | 否 | int | 不传则使用机构配置 | 允许老师开启临时教室，0=不允许，1=允许 |
+| allowStudentCreateCourse | 否 | int | 不传则使用机构配置 | 允许学生开启临时教室，0=不允许，1=允许 |
+| allowEditCoCreate | 否 | int | 不传则使用机构配置 | 共创设置-学生可编辑共创文档，0=不允许，1=允许 |
+| allowTeacherEditCoCreate | 否 | int | 不传则使用机构配置 | 共创设置-教师可编辑共创文档，0=不允许，1=允许 |
+| allowStudentUseAi | 否 | int | 不传则使用机构配置 | 共创设置-学生可使用AI功能，0=不允许，1=允许 |
+| allowStudentUseAiAssistant | 否 | int | 不传则使用机构配置 | AI应用设置-学生可使用AI应用，0=不允许，1=允许 |
+
 
 ## 响应参数
 
 | key | 类型 | 示例值 | 含义|
 | ----|-----|-----| ----|
 | data | number	| 352861 |	创建成功返回的课程 ID|
-| error_info | 	object |	|	返回信息对象|
+| more_data | object | |当allowInitiativeJoin=1时返回 |
+| └ inviteUrl | string | "https://www.eeo.cn/s/a/?cid=abc123def" | 邀请链接 |
+| error_info | 	object | |	返回信息对象|
 | └ errno |	number |	1	 | 错误代码|
 | └ error |	string |	"程序正常执行" |	错误详情|
 

@@ -6,6 +6,9 @@
 1. 可以对课程设置班主任。课程的班主任能够在（PC&Android&iOS）客户端进行管理班级（例如：创建/编辑/删除课节及学生、以及结束课程等）。请注意：班主任在客户端的操作行为，其数据不会返回至您的对接系统里（例如，班主任通过客户端创建的课节，该课节信息不回同步至您的系统里）。
 2. 不支持删除课程班主任，一旦设置了班主任，则只支持修改。当传参mainTeacherUid为空时（即""），等效于不传，表示不做任何修改。
 
+**参数兼容说明**    
+2026年9月，新增allowDeleteCourseStudentReplay 取代原先的 notAllowDeleteCourseStudentReplay。具体说明看参数部分。请使用新参数对接。     
+为兼容之前对接的程序，旧参数仍有效，但如果同时传两个，会仅取 allowDeleteCourseStudentReplay 的值。
 
 ## URL
 
@@ -39,15 +42,29 @@
 | classroomSettingId | 否 | 不传默认为0 | 教室设置 ID | 教室设置 ID 查找方式：登录到  eeo.cn 后台，找到机构设置，教室设置，每套教室设置上会显示教室设置 ID；选择此套设置后，该课程下所有教室内会依照此设置展示。<br/> 教室设置包含：A. 教室皮肤，B. 开关设置（头像下方工具栏、聊天窗口、学生端花名册，课后评价，教室工具箱，云盘等），C. 参数设置（录课倒计时，教室聊天时间间隔等）|
 | allowAddFriend | 否 | tinyint，最大长度1 | 无 | 是否允许班级成员在群里互相添加好友，0=不允许，1=允许，传非0或非1报参数错误，不传则不设置 |
 | allowStudentModifyNickname | 否 | tinyint，最大长度1 | 无 | 是否允许学生在群里修改其班级昵称，0=不允许，1=允许，传非0或非1报参数错误，不传不修改 |
-| notAllowDeleteCourseStudentReplay | 否 | int  | 不传不修改，传错报【参数错误】 | 是否不允许离开班级的学生或班级解散后，可查看课程内容	0=否（允许），1=是（不允许） |
+| allowDeleteCourseStudentReplay | 否 | int  | 不传不修改，传错报【参数错误】 | 是否允许离开班级的学生或班级解散后，可查看课程内容	0=否（不允许），1=是（允许） |
+| allowInitiativeJoin | 否 | int | 不传默认0 | 允许学生主动加入班级，0=不允许，1=允许 |
+| inviteState | 否 | int | 不传默认0 | 分享后网页是否显示加入班级入口。仅当allowInitiativeJoin=1时有效 |
+| allowTeacherAddFriend | 否 | int | 不传则使用机构配置 | 允许班主任添加班级成员为好友，0=不允许，1=允许 |
+| allowCourseNotice | 否 | int | 不传则使用机构配置 | 允许显示班级动态，0=不允许，1=允许 |
+| allowTeacherCreateCourse | 否 | int | 不传则使用机构配置 | 允许老师开启临时教室，0=不允许，1=允许 |
+| allowStudentCreateCourse | 否 | int | 不传则使用机构配置 | 允许学生开启临时教室，0=不允许，1=允许 |
+| allowEditCoCreate | 否 | int | 不传则使用机构配置 | 共创设置-学生可编辑共创文档，0=不允许，1=允许 |
+| allowTeacherEditCoCreate | 否 | int | 不传则使用机构配置 | 共创设置-教师可编辑共创文档，0=不允许，1=允许 |
+| allowStudentUseAi | 否 | int | 不传则使用机构配置 | 共创设置-学生可使用AI功能，0=不允许，1=允许 |
+| allowStudentUseAiAssistant | 否 | int | 不传则使用机构配置 | AI应用设置-学生可使用AI应用，0=不允许，1=允许 |
+
 
 ## 响应参数
 
 | key | 类型 | 示例值 | 含义|
 | ----|-----|-----| ----|
-| error_info | 	object |	|	返回信息对象|
-| └ errno |	number |	1	 | 错误代码|
-| └ error |	string |	"程序正常执行" |	错误详情|
+| error_info | object | |返回信息对象|
+| └ errno |number |  | 错误代码|
+| └ error |string |"程序正常执行" |错误详情|
+| data | string | "" | 编辑成功时返回空字符串 |
+| more_data | object | | 当请求传入allowInitiativeJoin=1时返回 |
+| └ inviteUrl | string | "https://www.eeo.cn/s/a/?cid=abc123def" |邀请链接 |
 
 
 ## 示例
@@ -79,8 +96,18 @@ curl -H "Content-Type: application/x-www-form-urlencoded" -X "POST" \
        -d "Filedata=@~/photo.jpg" \
        -d "courseIntroduce=ClassIn,真正专业的在线教室" \
        -d "classroomSettingId=235" \
-       -d "allowAddFriend=1" \
-       -d "allowStudentModifyNickname=0" \
+      -d "allowAddFriend=1" \
+      -d "allowStudentModifyNickname=0" \
+      -d "allowInitiativeJoin=1" \
+      -d 'inviteState={"enable":true,"homeworkshare":true,"livepage":true,"studyreport":true,"teachreport":true}' \
+      -d "allowTeacherAddFriend=1" \
+      -d "allowCourseNotice=1" \
+      -d "allowTeacherCreateCourse=1" \
+      -d "allowStudentCreateCourse=1" \
+      -d "allowEditCoCreate=1" \
+      -d "allowTeacherEditCoCreate=1" \
+      -d "allowStudentUseAi=1" \
+      -d "allowStudentUseAiAssistant=1" \
        "https://root_url/partner/api/course.api.php?action=editCourse"
 ```
 
@@ -92,6 +119,22 @@ curl -H "Content-Type: application/x-www-form-urlencoded" -X "POST" \
   "error_info": {
     "errno": 1,
     "error": "程序正常执行"
+  },
+  "data": ""
+}
+```
+
+当请求传入 `allowInitiativeJoin=1` 且课程为标准课时，返回值中额外包含 `more_data.inviteUrl`：
+
+```json
+{
+  "error_info": {
+    "errno": 1,
+    "error": "程序正常执行"
+  },
+  "data": "",
+  "more_data": {
+    "inviteUrl": "https://www.eeo.cn/s/a/?cid=abc123def"
   }
 }
 ```
